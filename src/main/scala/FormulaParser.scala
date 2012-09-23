@@ -1,6 +1,7 @@
 package com.nowanswers.chemistry
 
 import scala.util.matching.Regex
+import util.parsing.combinator.RegexParsers
 
 object Elements {
   
@@ -25,7 +26,7 @@ trait Stoichiometry {
 }
 
 case class Element(symbol: String)
-case class ElementalTerm(element: Element, oxidationNumber: Option[Int] = None) extends Term {
+case class ElementalTerm(element: Element, charge: Option[Int] = None) extends Term {
     val complexity = 1.0
 }
 case class SubsitutionGroup(terms: List[Term]) extends Term{
@@ -45,4 +46,28 @@ case class Formula(terms: List[QuantifiedTerm], waterQuantity: Int = 0) {
     val termComplexity = (terms :\ 0.0) ((term:Stoichiometry, sum:Double) => sum + term.complexity)
     val waterComplexity = if (waterQuantity == 1) {1} else {scala.math.sqrt(waterQuantity)}
     val complexity = termComplexity + waterComplexity
+}
+
+trait FormulaParser extends RegexParsers {
+
+  val INT = """[1-9][0-9]*"""r
+
+  val NEWLINE = """\r?\n"""r
+
+  val SIGN = """[+-]"""r
+
+  val SYMBOL = """(REE)|([A-Z][a-z]?)"""r
+
+
+  def charge: Parser[Int]
+  def quantifier: Parser[Int]
+  def element: Parser[Element]
+  def elementalTerm : Parser[ElementalTerm]
+  def substitutionGroup : Parser[SubsitutionGroup]
+  def functionalGroup : Parser[FunctionalGroup]
+  def term: Parser[Term]
+  def quantifiedTerm: Parser[QuantifiedTerm]
+  def molecularWater: Parser[Int]
+  def formula: Parser[Formula]
+
 }
