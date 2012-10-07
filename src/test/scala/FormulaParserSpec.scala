@@ -45,8 +45,8 @@ class FormulaParserSpec
       Fe+3 must_== ElementalTerm(Element("Fe"), Option(3))
     }
 
-    "interpret the number before an element as a quantity" in {
-      (2::Fe) must_== QuantifiedTerm(ElementalTerm(Element("Fe")), 2)
+    "interpret the number after * as a quantity" in {
+      (Fe * 2) must_== QuantifiedTerm(ElementalTerm(Element("Fe")), 2)
     }
 
     "interpret concatenation as a functional group" in {
@@ -111,7 +111,7 @@ class FormulaParserSpec
         List(
           QuantifiedTerm(SubsitutionGroup(Mg, Mn+2, Ca)),
           QuantifiedTerm(SubsitutionGroup(Al, Fe+3)),
-          QuantifiedTerm(S ~ (4::O), 2), F), 14)
+          QuantifiedTerm(S ~ (O*4), 2), F), 14)
       )
     }
   }

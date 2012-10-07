@@ -153,8 +153,8 @@ trait Stoichiometry {
 
 case class Element(symbol: String) {
   def +(value: Int) = ElementalTerm(this, Option(value))
-  def ::(value: Int) = QuantifiedTerm(ElementalTerm(this), value)
-  def ~(term: QuantifiedTerm) = FunctionalGroup(1::this, term)
+  def *(value: Int) = QuantifiedTerm(ElementalTerm(this), value)
+  def ~(term: QuantifiedTerm) = FunctionalGroup(this, term)
 }
 
 case class ElementalTerm(element: Element, charge: Option[Int] = None) extends Term {
