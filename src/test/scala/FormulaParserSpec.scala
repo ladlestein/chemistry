@@ -4,69 +4,19 @@ import org.specs2.mutable.Specification
 
 
 class FormulaParserSpec
-  extends Specification {
-
-  val parser: FormulaParser with Object = new FormulaParser {
-
-    def charge = INT ~ SIGN ^^ {
-      case value ~ "-" => -value.toInt
-      case value ~ "+" => value.toInt
-    }
-
-    def quantifier = INT ^^ {
-      int => int.toInt
-    }
-
-    def functionalGroupExpression: Parser[List[QuantifiedTerm]] = {
-      "(" ~> rep1(quantifiedTerm) <~ ")"
-    }
-
-    def substitutionGroupExpression = {
-      "(" ~> rep1sep(term, ",") <~ ")"
-    }
-
-    def molecularWater = "·" ~> INT <~ "H2O" ^^ {
-      int => int.toInt
-    }
-
-  }
-
-  def parseFormula(formulaText: String) = parser.parse(parser.formula, formulaText).get
-  def parseElement(elementText: String) = parser.parse(parser.element, elementText).get
-
+  extends Specification with BasicFormulaParserComponent {
 
   val oxygen = Element("O")
   val hydrogen = Element("H")
 
-  "The formula DSL" should {
-    import Element._
-
-    "interpret the number after a metal cation as a charge" in {
-      Fe+3 must_== ElementalTerm(Element("Fe"), Option(3))
-    }
-
-    "interpret the number after * as a quantity" in {
-      (Fe * 2) must_== QuantifiedTerm(ElementalTerm(Element("Fe")), 2)
-    }
-
-    "interpret concatenation as a functional group" in {
-      Cu ~ O must_== FunctionalGroup(QuantifiedTerm(ElementalTerm(Cu)), QuantifiedTerm(ElementalTerm(O)))
-    }
+  def parseElement(s: String) = parser.parseElement(s) match {
+    case Right(element) => element
+    case Left(message) => failure message
   }
 
-  "The element list" should {
-    "not be null" in {
-      Elements.all must not beNull
-    }
-    "contain an element with a single-character symbol" in {
-      Elements.all must contain (oxygen)
-    }
-    "contain an element with a double-character symbol" in {
-      Elements.all must contain (Element("Fe"))
-    }
-    "not contain an element that doesn't exist" in {
-      Elements.all must not contain (Element("X"))
-    }
+  def parseFormula(s: String) = parser.parseFormula(s) match {
+    case Right(formula) => formula
+    case Left(message) => failure message
   }
 
   "An element parser" should {
@@ -75,6 +25,7 @@ class FormulaParserSpec
     }
   }
 
+
   "A formula parser" should {
     "parse a single-element formula" in {
       parseFormula("Fe") must_== (Formula(List(QuantifiedTerm(ElementalTerm(Element("Fe"))))))
@@ -82,10 +33,10 @@ class FormulaParserSpec
     "parse a formula with a quantified element" in {
       parseFormula("Fe2") must_== (Formula(List(QuantifiedTerm(ElementalTerm(Element("Fe")), 2))))
     }
-    "parse a formula with an oxidation number" in {
+    "parse a formula containing an element with a positive charge" in {
       parseFormula("Fe3+") must_== (Formula(List(QuantifiedTerm(ElementalTerm(Element("Fe"), Option(3))))))
     }
-    "parse a formula with a negative oxidation number" in {
+    "parse a formula containing an element with a negative charge" in {
       parseFormula("Br3-") must_== (Formula(List(QuantifiedTerm(ElementalTerm(Element("Br"), Option(-3))))))
     }
     "parse a formula with multiple terms" in {
@@ -102,18 +53,18 @@ class FormulaParserSpec
     }
 
     "parse a formnula with molecular water" in {
-      parseFormula("Mn·5H2O") must_== (Formula(List(
-        QuantifiedTerm(Mn)), 5))
+      parseFormula("Mn·5H2O") must_== (Formula(List(Mn), 5))
     }
 
     "parse a big formula" in {
       parseFormula("(Mg,Mn2+,Ca)(Al,Fe3+)(SO4)2F·14H2O") must_== (Formula(
         List(
-          QuantifiedTerm(SubsitutionGroup(Mg, Mn+2, Ca)),
-          QuantifiedTerm(SubsitutionGroup(Al, Fe+3)),
+          QuantifiedTerm(SubsitutionGroup(Mg, `Mn+2`, Ca)),
+          QuantifiedTerm(SubsitutionGroup(Al, `Fe+3`)),
           QuantifiedTerm(S ~ (O*4), 2), F), 14)
       )
     }
+
   }
 
 
