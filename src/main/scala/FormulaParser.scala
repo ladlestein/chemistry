@@ -1,6 +1,5 @@
 package com.nowanswers.chemistry
 
-import scala.util.matching.Regex
 import util.parsing.combinator.RegexParsers
 
 object Elements {
@@ -24,8 +23,9 @@ object Element {
   implicit def ElementalTermToQuantifiedTerm(term: ElementalTerm) : QuantifiedTerm = QuantifiedTerm(term)
   implicit def SubstitutionGroupToQuantifiedTerm(group: SubsitutionGroup) : QuantifiedTerm = QuantifiedTerm(group)
   implicit def FunctionalGroupToQuantifiedTerm(group: FunctionalGroup) : QuantifiedTerm = QuantifiedTerm(group)
-  implicit def FunctionalGroupToFormula(group: FunctionalGroup) : Formula = Formula(List(group))
+//  implicit def FunctionalGroupToFormula(group: FunctionalGroup) : Formula = Formula(List(group))
   implicit def QuantifiedTermToFormula(term: QuantifiedTerm) : Formula = Formula(List(term))
+  implicit def FormulaToFunctionalGroup(formula: Formula) : FunctionalGroup = FunctionalGroup(formula.terms: _*)
 
   implicit def ProductToSubstitutionGroup(things: Tuple1[QuantifiedTerm]) : QuantifiedTerm = SubsitutionGroup(things._1)
   implicit def ProductToSubstitutionGroup(things: (QuantifiedTerm, QuantifiedTerm)) : QuantifiedTerm = SubsitutionGroup(things._1, things._2)
@@ -210,7 +210,7 @@ trait Term extends Stoichiometry
 case class QuantifiedTerm(term: Term, quantity: Double = 1) extends Stoichiometry{
   def complexity = term.complexity * (if (quantity == 1) {1} else {scala.math.sqrt(quantity)})
   def *(value: Int) = QuantifiedTerm(term, quantity * value)
-  def ~(term: QuantifiedTerm) = FunctionalGroup(this, term)
+  def +(term: QuantifiedTerm) = Formula(List(this, term))
 
   override def toString = (term toString) + (quantity match {
     case 1.0 => ""
@@ -220,9 +220,11 @@ case class QuantifiedTerm(term: Term, quantity: Double = 1) extends Stoichiometr
 }
 
 case class Formula(terms: List[QuantifiedTerm], waterQuantity: Int = 0) {
-    val termComplexity = (terms :\ 0.0) ((term:Stoichiometry, sum:Double) => sum + term.complexity)
-    val waterComplexity = if (waterQuantity == 1) {1} else {scala.math.sqrt(waterQuantity)}
-    val complexity = termComplexity + waterComplexity
+  val termComplexity = (terms :\ 0.0) ((term:Stoichiometry, sum:Double) => sum + term.complexity)
+  val waterComplexity = if (waterQuantity == 1) {1} else {scala.math.sqrt(waterQuantity)}
+  val complexity = termComplexity + waterComplexity
+
+  def +(term: QuantifiedTerm) = Formula(terms :+ term)
 
   override def toString = (terms mkString) + (if (waterQuantity != 0) "·" + waterQuantity + "H2O" else "")
 }

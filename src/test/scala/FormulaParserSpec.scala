@@ -61,7 +61,7 @@ class FormulaParserSpec
         List(
           QuantifiedTerm(SubsitutionGroup(Mg, `Mn+2`, Ca)),
           QuantifiedTerm(SubsitutionGroup(Al, `Fe+3`)),
-          QuantifiedTerm(S ~ (O*4), 2), F), 14)
+          QuantifiedTerm(S+O*4, 2), F), 14)
       )
     }
 

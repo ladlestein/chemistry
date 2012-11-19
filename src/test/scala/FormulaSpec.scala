@@ -17,8 +17,8 @@ class FormulaSpec
       (Fe * 2) must_== QuantifiedTerm(ElementalTerm(Element("Fe")), 2)
     }
 
-    "interpret concatenation as a functional group" in {
-      Cu ~ O must_== FunctionalGroup(QuantifiedTerm(ElementalTerm(Element("Cu"))), QuantifiedTerm(ElementalTerm(Element("O"))))
+    "interpret addition as a formula" in {
+      Cu + O must_== Formula(List(QuantifiedTerm(ElementalTerm(Element("Cu"))), QuantifiedTerm(ElementalTerm(Element("O")))))
     }
 
     "interpret a tuple as a substitution group" in {
@@ -29,7 +29,7 @@ class FormulaSpec
 
 //    "interpret a big formula" in {
 //      val x = "(Mg,Mn2+,Ca)(Al,Fe3+)(SO4)2F·14H2O"
-//      Formula(List((Mg,`Mn+2`,Ca), (Al,`Fe+3`), S ~ (O*4), F*2), 14) must_== ...
+//      Formula(List((Mg,`Mn+2`,Ca), (Al,`Fe+3`), S + (O*4), F*2), 14) must_== ...
 //    }
   }
 
@@ -73,9 +73,6 @@ class FormulaSpec
       ), 2) toString) must_== "Ca(SO4)·2H2O"
     }
 
-    //    "render CO2" in {
-//      (C~(O*2) toString) must_== "CO2"
-//    }
   }
 
   "Illegal elements" should {
